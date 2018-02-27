@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'pry'
+
+require_relative '../app/environment'
+require_relative '../app/logger'
+require_relative '../app/prepare_branch'
+require_relative '../app/terminal'
+
+LOG_FILE = '/usr/local/var/log/the-sausage-factory'
+
+logger = Logger.new(stream: IO.new(IO.sysopen(LOG_FILE, 'a+')))
+
+PrepareBranch.new(
+  logger: logger,
+  onto: 'master'
+).start
