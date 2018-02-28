@@ -36,10 +36,16 @@ class PrepareBranch
     when 'r'
       terminal.call :begin_rebase, onto: onto
       terminal.prompt_to_continue
-    when 's'
+    when 'd'
       sha = terminal.ask 'Enter a SHA', autocomplete_strategy: [:sha, { onto: onto }]
       terminal.clear
       terminal.call :show, sha: sha
+      terminal.prompt_to_continue
+    when 's'
+      start_sha = terminal.ask 'Enter the start SHA', autocomplete_strategy: [:sha, { onto: onto }]
+      end_sha = terminal.ask 'Enter the end SHA', autocomplete_strategy: [:sha, { onto: onto }]
+      terminal.clear
+      terminal.call :sum_diff, start_sha: start_sha, end_sha: end_sha
       terminal.prompt_to_continue
     when 'q'
       exit

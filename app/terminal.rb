@@ -20,7 +20,8 @@ class Terminal
     current_branch: 'git rev-parse --abbrev-ref HEAD',
     list_commits: 'git log --oneline --decorate --reverse %{onto}...',
     begin_rebase: 'git rebase -i %{onto}',
-    show: 'git show %{sha}'
+    show: 'git show %{sha}',
+    sum_diff: 'git diff -w --find-renames --find-copies --patience %{start_sha}~...%{end_sha}'
   }
 
   def initialize(out: $stdout, err: $stderr, prompt: DEFAULT_PROMPT, logger: nil)
@@ -32,7 +33,7 @@ class Terminal
 
   def ask(question, autocomplete_strategy: :default)
     set_autocomplete_strategy autocomplete_strategy
-    Readline.readline "#{question}#{prompt}", true
+    Readline.readline("#{question}#{prompt}", true).chomp.strip
   end
 
   def blank_lines(quantity = 1)
