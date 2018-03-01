@@ -14,9 +14,8 @@ class PrepareBranch
         terminal.clear
         terminal.say heading
         terminal.call :list_commits, onto: onto
-        result = terminal.ask ''
+        result = terminal.wait_for_keypress
         handle_keypress result
-        terminal.say result
       rescue Interrupt
         exit
       end
@@ -35,7 +34,6 @@ class PrepareBranch
     case key
     when 'r'
       terminal.call :begin_rebase, onto: onto
-      terminal.prompt_to_continue
     when 'd'
       sha = terminal.ask 'Enter a SHA', autocomplete_strategy: [:sha, { onto: onto }]
       terminal.clear

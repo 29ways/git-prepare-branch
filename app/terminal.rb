@@ -55,6 +55,10 @@ class Terminal
     call CLEAR
   end
 
+  def enable_raw
+    system("stty raw -echo")
+  end
+
   def hr
     out.puts HR_CHARACTER * width
   end
@@ -62,12 +66,28 @@ class Terminal
   def prompt_to_continue
     blank_lines NUM_BLANK_LINES_BEFORE_PROMPT
     hr
-    say 'Press enter to continue'
-    STDIN.read(1)
+    say 'Press any key to continue'
+    wait_for_keypress {}
+  end
+
+  def reset_raw
+    system("stty -raw echo")
   end
 
   def say(output)
     puts output
+  end
+
+  def wait_for_keypress
+    while true do
+      begin
+        enable_raw
+        char = STDIN.getc
+        return char
+      ensure
+        reset_raw
+      end
+    end
   end
 
   private
