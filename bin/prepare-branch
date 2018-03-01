@@ -2,6 +2,7 @@
 
 require 'pry'
 
+require_relative '../app/command'
 require_relative '../app/environment'
 require_relative '../app/logger'
 require_relative '../app/prepare_branch'
