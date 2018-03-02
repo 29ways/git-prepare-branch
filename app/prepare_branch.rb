@@ -17,7 +17,11 @@ class PrepareBranch
         terminal.call :list_commits, onto: onto
         terminal.say 'Press a command key or ? for help', :hint
         result = terminal.wait_for_keypress
-        handle_keypress result
+        if environment.mid_rebase?
+          handle_keypress_mid_rebase result
+        else
+          handle_keypress result
+        end
       rescue Interrupt
         exit
       end
@@ -43,18 +47,43 @@ class PrepareBranch
     when :begin_rebase
       terminal.call :begin_rebase, onto: onto
     when :show_diff
-      sha = terminal.ask 'Enter a SHA', autocomplete_strategy: [:sha, { onto: onto }]
-      terminal.clear
-      terminal.call :show, sha: sha
-      terminal.prompt_to_continue
+      show_diff
     when :sum_diff
-      start_sha = terminal.ask 'Enter the start SHA', autocomplete_strategy: [:sha, { onto: onto }]
-      end_sha = terminal.ask 'Enter the end SHA', autocomplete_strategy: [:sha, { onto: onto }]
-      terminal.clear
-      terminal.call :sum_diff, start_sha: start_sha, end_sha: end_sha
-      terminal.prompt_to_continue
+      sum_diff
     when :quit
       exit
     end
+  end
+
+  def handle_keypress_mid_rebase key
+    case Command.for_key(key)
+    when :abort_rebase
+      terminal.call :abort_rebase
+    when :continue_rebase
+      terminal.call :continue_rebase
+    when :show_diff
+      show_diff
+    when :sum_diff
+      sum_diff
+    when :quit
+      exit
+    end
+  end
+
+  def show_diff
+    sha = terminal.ask 'Enter a SHA', autocomplete_strategy: [:sha, { onto: onto }]
+    terminal.clear
+    terminal.call :show, sha: sha
+    terminal.prompt_to_continue
+  rescue Interrupt
+  end
+
+  def sum_diff
+    start_sha = terminal.ask 'Enter the start SHA', autocomplete_strategy: [:sha, { onto: onto }]
+    end_sha = terminal.ask 'Enter the end SHA', autocomplete_strategy: [:sha, { onto: onto }]
+    terminal.clear
+    terminal.call :sum_diff, start_sha: start_sha, end_sha: end_sha
+    terminal.prompt_to_continue
+  rescue Interrupt
   end
 end
