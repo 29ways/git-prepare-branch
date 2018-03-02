@@ -1,19 +1,21 @@
 # frozen_string_literal: true
 
 class PrepareBranch
-  def initialize(onto:, terminal: nil, environment: nil, logger: nil)
+  def initialize(onto:, terminal: nil, environment: nil, logger: nil, styles: nil)
     @onto = onto
     @logger = logger || Logger.new
     @terminal = terminal || Terminal.new(logger: @logger)
     @environment = environment || Environment.new
+    @styles = styles || Styles.new
   end
 
   def start
     while true do
       begin
         terminal.clear
-        terminal.say heading
+        heading
         terminal.call :list_commits, onto: onto
+        terminal.say 'Press a command key or ? for help', :hint
         result = terminal.wait_for_keypress
         handle_keypress result
       rescue Interrupt
@@ -24,10 +26,11 @@ class PrepareBranch
 
   private
 
-  attr_reader :onto, :terminal, :environment, :logger
+  attr_reader :onto, :terminal, :environment, :logger, :styles
 
   def heading
-    terminal.say "Rebasing #{environment.current_branch} on to #{onto}"
+    terminal.write_line "#{environment.current_branch} => #{onto} | #{terminal.capture(:count_commits, onto: onto)} commits, #{terminal.capture(:count_files, onto: onto)} files", :header
+    terminal.say ''
   end
 
   def handle_keypress key

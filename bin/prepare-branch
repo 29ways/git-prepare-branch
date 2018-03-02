@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 
 require 'pry'
+require 'rainbow'
 
 require_relative '../app/command'
 require_relative '../app/environment'
 require_relative '../app/logger'
 require_relative '../app/prepare_branch'
+require_relative '../app/styles'
 require_relative '../app/terminal'
 
 LOG_FILE = '/usr/local/var/log/the-sausage-factory'

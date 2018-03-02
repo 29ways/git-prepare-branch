@@ -1,10 +1,12 @@
 require 'readline'
+require 'io/console'
 
 class Terminal
   CLEAR = 'clear'
   DEFAULT_PROMPT = '❯ '
   DEFAULT_WIDTH = 20
   HR_CHARACTER = '─'
+  BLANK_CHARACTER = ' '
   NUM_BLANK_LINES_BEFORE_PROMPT = 3
 
   AUTOCOMPLETE_STRATEGIES = {
@@ -17,6 +19,8 @@ class Terminal
   }
 
   COMMANDS = {
+    count_commits: 'git rev-list --count %{onto}...',
+    count_files: 'git diff --name-only %{onto}... | wc -l',
     current_branch: 'git rev-parse --abbrev-ref HEAD',
     list_commits: 'git log --oneline --decorate --reverse %{onto}...',
     begin_rebase: 'git rebase -i %{onto}',
@@ -24,11 +28,12 @@ class Terminal
     sum_diff: 'git diff -w --find-renames --find-copies --patience %{start_sha}~...%{end_sha}'
   }
 
-  def initialize(out: $stdout, err: $stderr, prompt: DEFAULT_PROMPT, logger: nil)
+  def initialize(out: $stdout, err: $stderr, prompt: DEFAULT_PROMPT, logger: nil, styles: nil)
     @out = out
     @err = err
     @prompt = prompt
     @logger = logger || Logger.new
+    @styles = styles || Styles.new
   end
 
   def ask(question, autocomplete_strategy: :default)
@@ -48,7 +53,7 @@ class Terminal
 
   def capture(command, values = {})
     command = normalise_command(command, values)
-    `#{command}`.chomp
+    `#{command}`.chomp.strip
   end
 
   def clear
@@ -60,13 +65,13 @@ class Terminal
   end
 
   def hr
-    out.puts HR_CHARACTER * width
+    out.puts styles.hr(HR_CHARACTER * width)
   end
 
   def prompt_to_continue
     blank_lines NUM_BLANK_LINES_BEFORE_PROMPT
     hr
-    say 'Press any key to continue'
+    say styles.footer('Press any key to continue')
     wait_for_keypress {}
   end
 
@@ -74,8 +79,8 @@ class Terminal
     system("stty -raw echo")
   end
 
-  def say(output)
-    puts output
+  def say(output, style = :default)
+    puts styles.apply(output, style)
   end
 
   def wait_for_keypress
@@ -90,9 +95,13 @@ class Terminal
     end
   end
 
+  def write_line(output, style = :default)
+    puts styles.apply(make_full_width(output), style)
+  end
+
   private
 
-  attr_reader :out, :err, :prompt, :logger
+  attr_reader :out, :err, :prompt, :logger, :styles
 
   def normalise_command(command, values = {})
     return command if command.is_a?(String)
@@ -107,9 +116,13 @@ class Terminal
 
   def width
     begin
-      Readline.get_screen_size[1]
+      IO.console.winsize[1]
     rescue NotImplementedError
       DEFAULT_WIDTH
     end
+  end
+
+  def make_full_width(text)
+    text + (BLANK_CHARACTER * [width - text.length, 0].max)
   end
 end
