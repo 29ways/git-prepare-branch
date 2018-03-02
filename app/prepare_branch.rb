@@ -29,8 +29,13 @@ class PrepareBranch
   attr_reader :onto, :terminal, :environment, :logger, :styles
 
   def heading
-    terminal.write_line "#{environment.current_branch} => #{onto} | #{terminal.capture(:count_commits, onto: onto)} commits, #{terminal.capture(:count_files, onto: onto)} files", :header
-    terminal.say ''
+    if environment.mid_rebase?
+      terminal.write_line "❯ Rebasing #{environment.current_branch} onto #{onto}", :header_warning
+      terminal.say ''
+    else
+      terminal.write_line "❯ #{environment.current_branch} => #{onto} | #{terminal.capture(:count_commits, onto: onto)} commits, #{terminal.capture(:count_files, onto: onto)} files", :header
+      terminal.say ''
+    end
   end
 
   def handle_keypress key

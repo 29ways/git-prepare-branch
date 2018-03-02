@@ -7,6 +7,10 @@ class Environment
     @current_branch ||= terminal.capture :current_branch
   end
 
+  def mid_rebase?
+    terminal.capture(:check_if_mid_rebase) == '1'
+  end
+
   private
 
   attr_reader :terminal

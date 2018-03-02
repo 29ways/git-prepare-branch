@@ -19,6 +19,7 @@ class Terminal
   }
 
   COMMANDS = {
+    check_if_mid_rebase: 'if test -d "$(git rev-parse --git-path rebase-merge)" || test -d "$(git rev-parse --git-path rebase-apply)"; then echo 1; fi',
     count_commits: 'git rev-list --count %{onto}...',
     count_files: 'git diff --name-only %{onto}... | wc -l',
     current_branch: 'git rev-parse --abbrev-ref HEAD',
