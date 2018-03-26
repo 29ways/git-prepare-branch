@@ -1,3 +1,5 @@
+require 'rainbow'
+
 class Styles
   def initialize(styler: nil)
     @styler = styler || Rainbow.global.method(:wrap)
