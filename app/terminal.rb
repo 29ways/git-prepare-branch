@@ -50,13 +50,19 @@ class Terminal
 
   def call(command, values = {})
     command = normalise_command(command, values)
-    logger.log "#{command}"
-    system command, out: out, err: err
+    logger.log "CMD: #{command}"
+    result = system command, out: out, err: err
+    logger.log "OUT: #{out}"
+    logger.log "ERR: #{err}"
+    result
   end
 
   def capture(command, values = {})
     command = normalise_command(command, values)
-    `#{command}`.chomp.strip
+    logger.log "CAP: #{command}"
+    result = `#{command}`.chomp.strip
+    logger.log "OUT: #{result}"
+    result
   end
 
   def clear
