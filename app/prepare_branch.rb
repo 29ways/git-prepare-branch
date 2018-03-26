@@ -5,7 +5,7 @@ class PrepareBranch
     @onto = onto
     @logger = logger || Logger.new
     @terminal = terminal || Terminal.new(logger: @logger)
-    @environment = environment || Environment.new
+    @environment = environment || Environment.new(terminal: @terminal)
     @styles = styles || Styles.new
   end
 
