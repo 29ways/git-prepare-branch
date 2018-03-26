@@ -11,9 +11,13 @@ require_relative '../app/terminal'
 
 LOG_FILE = '/usr/local/var/log/the-sausage-factory'
 
-logger = Logger.new(stream: IO.new(IO.sysopen(LOG_FILE, 'a+')))
+logger = Logger.new(
+  stream: IO.new(IO.sysopen(LOG_FILE, 'a+'))
+)
+
+onto = $ARGV[0] || 'master'
 
 PrepareBranch.new(
   logger: logger,
-  onto: 'master'
+  onto: onto
 ).start
