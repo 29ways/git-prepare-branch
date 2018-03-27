@@ -19,7 +19,7 @@ class Styles
   end
 
   def header(text)
-    style(text).color(:white).bg(:steelblue)
+    style(text).color(:white).bg(:darkslateblue)
   end
 
   def header_warning(text)
