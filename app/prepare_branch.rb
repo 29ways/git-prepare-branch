@@ -14,7 +14,7 @@ class PrepareBranch
       begin
         terminal.clear
         heading
-        terminal.call :list_commits, onto: onto
+        terminal.call :list_commits, onto: onto, file_filter: terminal.file_filter
         terminal.say 'Press a command key or ? for help', :hint
         result = terminal.wait_for_keypress
         if environment.mid_rebase?
@@ -37,9 +37,19 @@ class PrepareBranch
       terminal.write_line "❯ Rebasing #{environment.current_branch} onto #{onto}", :header_warning
       terminal.say ''
     else
-      terminal.write_line "❯ #{environment.current_branch} => #{onto} | #{terminal.capture(:count_commits, onto: onto)} commits, #{terminal.capture(:count_files, onto: onto)} files", :header
+      terminal.write_line default_heading_message, :header
       terminal.say ''
     end
+  end
+
+  def default_heading_message
+    message = "❯ #{environment.current_branch} => #{onto} | " +
+      "#{terminal.capture(:count_commits, onto: onto)} commits, " +
+      "#{terminal.capture(:count_files, onto: onto)} files"
+    unless terminal.file_filter.nil? || terminal.file_filter.empty?
+      message += " (#{terminal.file_filter})"
+    end
+    message
   end
 
   def handle_keypress key
@@ -50,6 +60,8 @@ class PrepareBranch
       show_diff
     when :sum_diff
       sum_diff
+    when :filter_files
+      filter_files
     when :quit
       exit
     end
@@ -84,6 +96,15 @@ class PrepareBranch
     terminal.clear
     terminal.call :sum_diff, start_sha: start_sha, end_sha: end_sha
     terminal.prompt_to_continue
+  rescue Interrupt
+  end
+
+  def filter_files
+    filter = terminal.ask 'Enter a filter pattern', autocomplete_strategy: [:file, {
+      prefix: terminal.capture(:get_prefix),
+      onto: onto
+    }]
+    terminal.file_filter = filter
   rescue Interrupt
   end
 end

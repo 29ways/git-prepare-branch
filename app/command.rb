@@ -6,6 +6,7 @@ class Command
     abort_rebase: 'a',
     begin_rebase: 'r',
     continue_rebase: 'c',
+    filter_files: 'f',
     show_diff: 'd',
     sum_diff: 's',
     quit: ['q', CTRL_C, CTRL_D]

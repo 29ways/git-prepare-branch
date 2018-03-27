@@ -3,7 +3,7 @@ require 'io/console'
 
 class Terminal
   CLEAR = 'clear'
-  DEFAULT_PROMPT = '❯ '
+  DEFAULT_PROMPT = ' ❯ '
   DEFAULT_WIDTH = 20
   HR_CHARACTER = '─'
   BLANK_CHARACTER = ' '
@@ -13,8 +13,13 @@ class Terminal
     default: -> (_, _) {},
     sha: -> (options, s) {
       `git rev-list #{options[:onto]}...`
-        .split("\n")
+        .split(/\n/)
         .grep(/^#{s}/)
+    },
+    file: ->(options, s) {
+      `git diff --name-only --relative=#{options[:prefix]} #{options[:onto]}...`
+        .split(/\n/)
+        .grep(/#{s}/)
     }
   }
 
@@ -25,11 +30,14 @@ class Terminal
     count_commits: 'git rev-list --count %{onto}...',
     count_files: 'git diff --name-only %{onto}... | wc -l',
     current_branch: 'git rev-parse --abbrev-ref HEAD',
-    list_commits: 'git log --oneline --decorate --reverse %{onto}...',
+    get_prefix: 'git rev-parse --show-prefix',
+    list_commits: 'git log --oneline --decorate --reverse %{onto}... *%{file_filter}*',
     begin_rebase: 'git rebase -i %{onto}',
     show: 'git show %{sha}',
     sum_diff: 'git diff -w --find-renames --find-copies --patience %{start_sha}~...%{end_sha}'
   }
+
+  attr_accessor :file_filter
 
   def initialize(out: $stdout, err: $stderr, prompt: DEFAULT_PROMPT, logger: nil, styles: nil)
     @out = out
