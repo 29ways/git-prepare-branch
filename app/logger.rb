@@ -5,6 +5,7 @@ class Logger
 
   def log message
     stream << format_message(message)
+    stream.flush
   end
 
   private
