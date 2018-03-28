@@ -31,7 +31,7 @@ class Terminal
     count_files: 'git diff --name-only %{onto}... | wc -l',
     current_branch: 'git rev-parse --abbrev-ref HEAD',
     get_prefix: 'git rev-parse --show-prefix',
-    list_commits: 'git log --oneline --decorate --reverse %{onto}... *%{file_filter}*',
+    list_commits: 'git log --oneline --decorate --reverse %{view} %{onto}.. *%{file_filter}*',
     begin_rebase: 'git rebase -i %{onto}',
     show: 'git show %{sha}',
     sum_diff: 'git diff -w --find-renames --find-copies --patience %{start_sha}~...%{end_sha}'

@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 class PrepareBranch
+  VIEWS = [
+    '',
+    '--stat --name-only',
+    '--stat'
+  ]
+
   def initialize(onto:, terminal: nil, environment: nil, logger: nil, styles: nil)
     @onto = onto
     @logger = logger || Logger.new
@@ -30,7 +36,7 @@ class PrepareBranch
 
   private
 
-  attr_reader :onto, :terminal, :environment, :logger, :styles
+  attr_reader :onto, :terminal, :environment, :logger, :styles, :view
 
   def heading
     if environment.mid_rebase?
@@ -62,6 +68,8 @@ class PrepareBranch
       sum_diff
     when :filter_files
       filter_files
+    when :cycle_view
+      cycle_view
     when :quit
       exit
     end
@@ -106,5 +114,19 @@ class PrepareBranch
     }]
     terminal.file_filter = filter
   rescue Interrupt
+  end
+
+  def cycle_view
+    logger.log "current view #{current_view}"
+    @current_view = (current_view + 1) % VIEWS.length
+  end
+
+  def current_view
+    @current_view || 0
+  end
+
+  def view
+    logger.log "view flag #{current_view}"
+    VIEWS[current_view]
   end
 end
