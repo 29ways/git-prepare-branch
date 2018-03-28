@@ -86,6 +86,12 @@ class PrepareBranch
       terminal.call :continue_rebase
     when :show_diff
       show_diff
+    when :show_my_changes
+      terminal.call :show_my_changes
+      terminal.prompt_to_continue
+    when :show_their_commits
+      terminal.call :show_their_commits
+      terminal.prompt_to_continue
     when :sum_diff
       sum_diff
     when :quit

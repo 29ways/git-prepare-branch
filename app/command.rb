@@ -9,6 +9,8 @@ class Command
     cycle_view: 'v',
     filter_files: 'f',
     show_diff: 'd',
+    show_my_changes: 'm',
+    show_their_commits: 't',
     sum_diff: 's',
     quit: ['q', CTRL_C, CTRL_D]
   }
