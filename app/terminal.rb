@@ -34,6 +34,7 @@ class Terminal
     list_commits: 'git log --oneline --decorate --reverse %{view} %{onto}.. *%{file_filter}*',
     begin_rebase: 'git rebase -i %{onto}',
     show: 'git show %{sha}',
+    status: 'git status -s',
     sum_diff: 'git diff -w --find-renames --find-copies --patience %{start_sha}~...%{end_sha}'
   }
 

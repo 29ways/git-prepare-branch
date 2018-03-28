@@ -20,12 +20,15 @@ class PrepareBranch
       begin
         terminal.clear
         heading
-        terminal.call :list_commits, onto: onto, file_filter: terminal.file_filter
-        terminal.say 'Press a command key or ? for help', :hint
-        result = terminal.wait_for_keypress
         if environment.mid_rebase?
+          terminal.call :status
+          terminal.say 'Press a command key or ? for help', :hint
+          result = terminal.wait_for_keypress
           handle_keypress_mid_rebase result
         else
+          terminal.call :list_commits, onto: onto, file_filter: terminal.file_filter, view: view
+          terminal.say 'Press a command key or ? for help', :hint
+          result = terminal.wait_for_keypress
           handle_keypress result
         end
       rescue Interrupt
