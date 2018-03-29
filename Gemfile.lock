@@ -1,12 +1,22 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    ansi (1.5.0)
+    builder (3.2.3)
+    minitest (5.11.3)
+    minitest-reporters (1.2.0)
+      ansi
+      builder
+      minitest (>= 5.0)
+      ruby-progressbar
     rainbow (3.0.0)
+    ruby-progressbar (1.9.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  minitest-reporters
   rainbow
 
 BUNDLED WITH
