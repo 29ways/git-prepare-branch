@@ -11,6 +11,7 @@ class Command
     show_diff: 'd',
     show_my_changes: 'm',
     show_their_commits: 't',
+    show_their_diff: 'h',
     sum_diff: 's',
     quit: ['q', CTRL_C, CTRL_D]
   }

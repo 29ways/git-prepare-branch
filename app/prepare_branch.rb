@@ -92,6 +92,9 @@ class PrepareBranch
     when :show_their_commits
       terminal.call :show_their_commits
       terminal.prompt_to_continue
+    when :show_their_diff
+      terminal.call :show_their_diff
+      terminal.prompt_to_continue
     when :sum_diff
       sum_diff
     when :quit

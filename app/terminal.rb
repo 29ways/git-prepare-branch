@@ -36,6 +36,7 @@ class Terminal
     show: 'git show %{sha}',
     show_my_changes: 'git diff --name-only --diff-filter=U --relative=$(git rev-parse --show-prefix) | xargs git show $(< $(git rev-parse --git-path rebase-merge/stopped-sha)) --oneline',
     show_their_commits: 'git diff --name-only --relative=$(git rev-parse --show-prefix) --diff-filter=U | xargs git log $(git merge-base HEAD $(< $(git rev-parse --git-path rebase-merge/stopped-sha)))... --oneline',
+    show_their_diff: 'git diff --name-only --relative=$(git rev-parse --show-prefix) --diff-filter=U | xargs git diff $(git merge-base HEAD $(< $(git rev-parse --git-path rebase-merge/stopped-sha)))... --oneline',
     status: 'git status -s',
     sum_diff: 'git diff -w --find-renames --find-copies --patience %{start_sha}~...%{end_sha}'
   }
