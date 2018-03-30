@@ -1,0 +1,163 @@
+#!/usr/bin/env ruby
+
+require 'pry'
+
+require_relative '../app/app'
+
+LOG_FILE = ENV['LOG']
+
+if LOG_FILE
+  logger = Logger.new(
+    stream: IO.new(IO.sysopen(LOG_FILE, 'a+'))
+  )
+else
+  logger = NullLogger.new
+end
+
+onto = $ARGV[0] || 'master'
+
+VIEWS = [
+  'log --oneline --decorate --reverse ',
+  'log --oneline --decorate --reverse --stat --name-only',
+  'log --oneline --decorate --reverse --stat',
+  'diff --stat',
+  'diff --dirstat'
+]
+
+App.configure(logger: logger) do
+  on :load do
+    variable :view, value: VIEWS[0]
+    variable :file_filter
+    variable :current_branch, capture: 'git rev-parse --abbrev-ref HEAD'
+    variable :prefix, capture: 'git rev-parse --show-prefix'
+    variable :num_commits, capture: 'git rev-list --count %{onto}..'
+    variable :num_files, capture: 'git diff --name-only %{onto}.. | wc -l'
+  end
+
+  on :display do
+    variable :mid_rebase?,
+      value: ->(context) {
+        context.terminal.capture(
+          'if test -d "$(git rev-parse --git-path rebase-merge)" || test -d "$(git rev-parse --git-path rebase-apply)"; then echo 1; fi'
+        ).strip == '1'
+      }
+
+    variable :conflicts?,
+      value: ->(context) {
+        !context.terminal.capture("git status -s | grep -e '^UU'").strip.empty?
+      }
+  end
+
+  screen :default do
+    heading '❯ %{current_branch} => %{onto} - %{num_commits} commits, %{num_files} files', style: :header
+    display 'git %{view} %{onto}.. *%{file_filter}*'
+    description "prepare-branch\n\nPrepare a branch for rebasing"
+
+    command 'f', 'filter files',
+      -> (context, inputs) {
+        context.variables[:file_filter] = inputs[:file_filter]
+      },
+      description: 'Filters commits to just those affected files that match the specified filter',
+      input: {
+        file_filter: {
+          prompt: 'Enter a file pattern',
+          autocomplete_strategy: :file
+        }
+      }
+
+    command 'r', 'begin rebase',
+      'git rebase -i %{onto}',
+      description: 'Start an interactive rebase'
+
+    command 's', 'show',
+      'git show %{sha}',
+      input: {
+        sha: {
+          prompt: 'Enter a sha',
+          autocomplete_strategy: :sha
+        }
+      },
+      description: 'Show a specific commit',
+      prompt_to_continue: true
+
+    command 'd', 'sum diff',
+      'git diff -w --find-renames --find-copies --patience %{start_sha}~...%{end_sha}',
+      input: {
+        start_sha: {
+          prompt: 'Enter the starting sha',
+          autocomplete_strategy: :sha
+        },
+        end_sha: {
+          prompt: 'Enter the end sha',
+          autocomplete_strategy: :sha
+        }
+      },
+      description: 'Show the combined diff from one sha to another (inclusive)',
+      prompt_to_continue: true
+
+    command 'D', 'entire diff',
+      'git diff -w --find-renames --find-copies --patience %{onto}..',
+      description: 'Show the entire combined diff as if the branch was squashed into a single commit',
+      prompt_to_continue: true
+
+    command 'v', 'cycle view',
+      -> (context, _) {
+        context.variables[:view] = VIEWS[(VIEWS.index(context.variables[:view]) + 1) % VIEWS.length]
+      },
+      description: 'Cycles through applying different view options to the list of commits'
+
+    command 'V', 'cycle view (reverse)',
+      -> (context, _) {
+        context.variables[:view] = VIEWS[(VIEWS.index(context.variables[:view]) - 1) % VIEWS.length]
+      },
+      description: 'Cycles back through applying different view options to the list of commits (reverse of v)'
+
+  end
+
+  screen :mid_rebase do
+    heading '❯ Rebasing %{current_branch} onto %{onto} (paused)', style: :header_ok
+    display 'git show --stat'
+    description "prepare-branch - mid rebase"
+
+    command 'a', 'abort rebase', 'git rebase --abort', description: 'Abort the current rebase'
+    command 'c', 'continue rebase', 'git rebase --continue', description: 'Continue with the current rebase'
+  end
+
+  screen :conflicts do
+    heading '❯ Conflicts rebasing %{current_branch} onto %{onto}', style: :header_warning
+    display 'git status -s'
+    description "prepare-branch - conflicts"
+
+    command 'a', 'abort rebase', 'git rebase --abort', description: 'Abort the current rebase'
+
+    command 'm', 'show my changes',
+      'git diff --name-only --diff-filter=U --relative=%{prefix} | xargs git show $(< $(git rev-parse --git-path rebase-merge/stopped-sha)) --oneline',
+      description: 'Show the diff of the content in this branch causing the conflict',
+      prompt_to_continue: true
+
+    command 't', 'show other commits',
+      'git diff --name-only --relative=%{prefix} --diff-filter=U | xargs git log $(git merge-base HEAD $(< $(git rev-parse --git-path rebase-merge/stopped-sha)))... --oneline',
+      description: 'Show the commits that may have introduced the conflicting changes',
+      prompt_to_continue: true
+
+    command 'o', 'show other diff',
+      'git diff --name-only --relative=%{prefix} --diff-filter=U | xargs git diff $(git merge-base HEAD $(< $(git rev-parse --git-path rebase-merge/stopped-sha)))...',
+      description: 'Show the combined diff of the commits that may have introduced the change',
+      prompt_to_continue: true
+
+    command 'd', 'show diff',
+      'git diff',
+      description: 'Show the diff of the conflicts',
+      prompt_to_continue: true
+  end
+
+  routing -> (context) {
+    if context.variables.mid_rebase?
+      return :conflicts if context.variables.conflicts?
+      return :mid_rebase
+    end
+    :default
+  }
+end.start(
+  onto: { value: onto }
+)

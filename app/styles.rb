@@ -22,6 +22,10 @@ class Styles
     style(text).color(:white).bg(:darkslateblue)
   end
 
+  def header_ok(text)
+    style(text).color(:white).bg(:darkgreen)
+  end
+
   def header_warning(text)
     style(text).color(:white).bg(:red)
   end

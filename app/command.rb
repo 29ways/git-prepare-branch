@@ -1,25 +1,43 @@
+# frozen_string_literal: true
+
 class Command
-  CTRL_C = "\u0003"
-  CTRL_D = "\u0004"
+  attr_reader :key, :name, :command, :options
 
-  COMMAND_KEYS = {
-    abort_rebase: 'a',
-    begin_rebase: 'r',
-    continue_rebase: 'c',
-    cycle_view: 'v',
-    filter_files: 'f',
-    show_diff: 'd',
-    show_my_changes: 'm',
-    show_their_commits: 't',
-    show_their_diff: 'h',
-    sum_diff: 's',
-    quit: ['q', CTRL_C, CTRL_D]
-  }
+  def initialize(key, name, command, options={})
+    @key = key
+    @name = name
+    @command = command
+    @options = options
+  end
 
-  def self.for_key(key)
-    COMMAND_KEYS
-      .select { |k, v| Array(v).include?(key) }
-      .keys
-      .first
+  def call(context)
+    inputs = capture_inputs(context)
+    run_proc(context, inputs) if command.is_a?(Proc)
+    run_as_shell_command(context, inputs) if command.is_a?(String)
+    context.terminal.prompt_to_continue if options[:prompt_to_continue]
+  end
+
+  def description
+    options[:description]
+  end
+
+  private
+
+  def capture_inputs(context)
+    return {} unless options[:input]
+    options[:input].each_with_object({}) do |(key, value), object|
+      object[key] = context.terminal.ask value[:prompt], autocomplete_strategy: [value[:autocomplete_strategy], context.variables]
+    end
+  end
+
+  def run_as_shell_command(context, inputs)
+    context.terminal.call format(
+      command,
+      context.variables.to_h.merge(inputs)
+    )
+  end
+
+  def run_proc(context, inputs)
+    command.call(context, inputs)
   end
 end

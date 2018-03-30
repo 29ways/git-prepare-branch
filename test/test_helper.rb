@@ -5,3 +5,5 @@ $: << File.expand_path('./app')
 
 require "minitest/reporters"
 Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new
+
+require 'pry'

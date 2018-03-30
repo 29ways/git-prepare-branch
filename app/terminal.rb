@@ -11,37 +11,17 @@ class Terminal
 
   AUTOCOMPLETE_STRATEGIES = {
     default: -> (_, _) {},
-    sha: -> (options, s) {
-      `git rev-list #{options[:onto]}...`
+    sha: -> (variables, s) {
+      `git rev-list #{variables[:onto]}...`
         .split(/\n/)
         .grep(/^#{s}/)
     },
-    file: ->(options, s) {
-      `git diff --name-only --relative=#{options[:prefix]} #{options[:onto]}...`
+    file: ->(variables, s) {
+      `git diff --name-only --relative=#{variables[:prefix]} #{variables[:onto]}...`
         .split(/\n/)
         .grep(/#{s}/)
     }
   }
-
-  COMMANDS = {
-    abort_rebase: 'git rebase --abort',
-    check_if_mid_rebase: 'if test -d "$(git rev-parse --git-path rebase-merge)" || test -d "$(git rev-parse --git-path rebase-apply)"; then echo 1; fi',
-    continue_rebase: 'git rebase --continue',
-    count_commits: 'git rev-list --count %{onto}...',
-    count_files: 'git diff --name-only %{onto}... | wc -l',
-    current_branch: 'git rev-parse --abbrev-ref HEAD',
-    get_prefix: 'git rev-parse --show-prefix',
-    list_commits: 'git log --oneline --decorate --reverse %{view} %{onto}.. *%{file_filter}*',
-    begin_rebase: 'git rebase -i %{onto}',
-    show: 'git show %{sha}',
-    show_my_changes: 'git diff --name-only --diff-filter=U --relative=$(git rev-parse --show-prefix) | xargs git show $(< $(git rev-parse --git-path rebase-merge/stopped-sha)) --oneline',
-    show_their_commits: 'git diff --name-only --relative=$(git rev-parse --show-prefix) --diff-filter=U | xargs git log $(git merge-base HEAD $(< $(git rev-parse --git-path rebase-merge/stopped-sha)))... --oneline',
-    show_their_diff: 'git diff --name-only --relative=$(git rev-parse --show-prefix) --diff-filter=U | xargs git diff $(git merge-base HEAD $(< $(git rev-parse --git-path rebase-merge/stopped-sha)))... --oneline',
-    status: 'git status -s',
-    sum_diff: 'git diff -w --find-renames --find-copies --patience %{start_sha}~...%{end_sha}'
-  }
-
-  attr_accessor :file_filter
 
   def initialize(out: $stdout, err: $stderr, prompt: DEFAULT_PROMPT, logger: nil, styles: nil)
     @out = out
@@ -125,8 +105,7 @@ class Terminal
   attr_reader :out, :err, :prompt, :logger, :styles
 
   def normalise_command(command, values = {})
-    return command if command.is_a?(String)
-    format(COMMANDS[command], values)
+    format(command, values)
   end
 
   def set_autocomplete_strategy strategy
