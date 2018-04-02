@@ -1,3 +1,9 @@
+PATH
+  remote: .
+  specs:
+    git-prepare-branch (0.1.0)
+      rainbow (~> 3.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -25,9 +31,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  minitest-reporters
-  pry-byebug
-  rainbow
+  git-prepare-branch!
+  minitest-reporters (~> 1.2)
+  pry-byebug (~> 3.6)
 
 BUNDLED WITH
    1.16.1

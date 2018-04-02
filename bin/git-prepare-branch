@@ -1,15 +1,15 @@
 #!/usr/bin/env ruby
 
-require_relative '../app/app'
+require_relative '../lib/git-prepare-branch'
 
 LOG_FILE = ENV['LOG']
 
 if LOG_FILE
-  logger = Logger.new(
+  logger = GitPrepareBranch::Logger.new(
     stream: IO.new(IO.sysopen(LOG_FILE, 'a+'))
   )
 else
-  logger = NullLogger.new
+  logger = GitPrepareBranch::NullLogger.new
 end
 
 onto = ARGV[0] || 'master'
@@ -22,7 +22,7 @@ VIEWS = [
   'diff --dirstat'
 ]
 
-App.configure(logger: logger) do
+GitPrepareBranch::App.configure(logger: logger) do
   on :load do
     variable :view, value: VIEWS[0]
     variable :file_filter
