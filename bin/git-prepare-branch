@@ -12,7 +12,7 @@ else
   logger = NullLogger.new
 end
 
-onto = $ARGV[0] || 'master'
+onto = ARGV[0] || 'master'
 
 VIEWS = [
   'log --oneline --decorate --reverse ',
