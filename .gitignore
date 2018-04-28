@@ -2,3 +2,5 @@
 .ruby-gemset
 
 *.gem
+
+packaging/vendor
