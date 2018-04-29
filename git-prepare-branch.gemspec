@@ -4,7 +4,7 @@ require 'git-prepare-branch/version'
 
 Gem::Specification.new do |s|
   s.name        = 'git-prepare-branch'
-  s.version     = GitPrepareBranch::Version
+  s.version     = GitPrepareBranch::VERSION
   s.licenses    = ['MIT']
   s.summary     = 'Command to assist in preparing git branches for review'
   s.description = 'Command to assist in preparing git branches for review'
